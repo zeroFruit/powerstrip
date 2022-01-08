@@ -38,20 +38,15 @@ type Client struct {
 }
 
 type ClientConfig struct {
-	Plugins          PluginSet
-	Cmd              *exec.Cmd
-	MinPort, MaxPort uint
-	StartTimeout     time.Duration
-	Stderr           io.Writer
-	SyncStdout       io.Writer
-	SyncStderr       io.Writer
+	Plugins      PluginSet
+	Cmd          *exec.Cmd
+	StartTimeout time.Duration
+	Stderr       io.Writer
+	SyncStdout   io.Writer
+	SyncStderr   io.Writer
 }
 
 func NewClient(config *ClientConfig) *Client {
-	if config.MinPort == 0 && config.MaxPort == 0 {
-		config.MinPort = 10000
-		config.MaxPort = 25000
-	}
 	if config.StartTimeout == 0 {
 		config.StartTimeout = 1 * time.Minute
 	}
@@ -99,14 +94,9 @@ func (c *Client) Start() (net.Addr, error) {
 	if c.addr != nil {
 		return c.addr, nil
 	}
-	env := []string{
-		fmt.Sprintf("PLUGIN_MIN_PORT=%d", c.config.MinPort),
-		fmt.Sprintf("PLUGIN_MAX_PORT=%d", c.config.MaxPort),
-	}
 
 	cmd := c.config.Cmd
 	cmd.Env = append(cmd.Env, os.Environ()...)
-	cmd.Env = append(cmd.Env, env...)
 	cmd.Stdin = os.Stdin
 
 	cmdStdout, err := cmd.StdoutPipe()
@@ -204,22 +194,21 @@ func (c *Client) Start() (net.Addr, error) {
 		return nil, errors.New("plugin exited before we could connect")
 	case line := <-linesCh:
 		line = strings.TrimSpace(line)
-		c.logger.Println("parts", line)
-		parts := strings.SplitN(line, "|", 6)
-		if len(parts) < 4 {
+		parts := strings.SplitN(line, "|", 2)
+		if len(parts) < 2 {
 			return nil, fmt.Errorf(
 				"Unrecognized remote plugin message: %s\n\n"+
 					"This usually means that the plugin is either invalid or simply\n"+
 					"needs to be recompiled to support the latest protocol.", line)
 		}
 
-		switch parts[2] {
+		switch parts[0] {
 		case "tcp":
-			addr, err = net.ResolveTCPAddr("tcp", parts[3])
+			addr, err = net.ResolveTCPAddr("tcp", parts[1])
 		case "unix":
-			addr, err = net.ResolveUnixAddr("unix", parts[3])
+			addr, err = net.ResolveUnixAddr("unix", parts[1])
 		default:
-			err = fmt.Errorf("Unknown address type: %s", parts[3])
+			err = fmt.Errorf("Unknown address type: %s", parts[0])
 		}
 
 		if err != nil {

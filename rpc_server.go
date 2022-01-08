@@ -133,7 +133,7 @@ func (d *dispenseServer) Dispense(name string, response *uint32) error {
 	if !ok {
 		return fmt.Errorf("unknown plugin type: %s", name)
 	}
-	// Create the implementation first so we know if there is an error.
+	// Create the implementation first, so we know if there is an error.
 	impl, err := p.Server(d.broker)
 	if err != nil {
 		// We turn the error into an errors error so that it works across RPC

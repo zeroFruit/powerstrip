@@ -10,13 +10,6 @@ import (
 	"os"
 )
 
-// CoreProtocolVersion is the ProtocolVersion of the plugin system itself.
-// We will increment this whenever we change any protocol behavior. This
-// will invalidate any prior plugins but will at least allow us to iterate
-// on the core in a safe way. We will do our best to do this very
-// infrequently.
-const CoreProtocolVersion = 1
-
 type PluginSet map[string]Plugin
 
 type ServeConfig struct {
@@ -71,17 +64,14 @@ func Serve(opts *ServeConfig) {
 		lis.Addr().Network(), "address ", lis.Addr().String())
 
 	// Output the address and service name to stdout so that the client can
-	// bring it up. In test mode, we don't do this because clients will
-	// attach via a reattach config.
-	fmt.Printf("%d|1|%s|%s\n",
-		CoreProtocolVersion,
+	// bring it up.
+	fmt.Printf("%s|%s\n",
 		lis.Addr().Network(),
 		lis.Addr().String())
 	os.Stdout.Sync()
 
 	// Set our stdout, stderr to the stdio stream that clients can retrieve
-	// using ClientConfig.SyncStdout/err. We only do this for non-test mode
-	// or if the test mode explicitly requests it.
+	// using ClientConfig.SyncStdout/err.
 	os.Stdout = stdoutWriter
 	os.Stderr = stderrWriter
 

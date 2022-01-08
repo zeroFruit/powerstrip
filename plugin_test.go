@@ -162,27 +162,27 @@ func TestHelperProcess(t *testing.T) {
 		os.Exit(2)
 	}
 
-	//pluginLogger := log.New(os.Stderr, "test-proc", log.LstdFlags)
-	//
-	//testPlugin := &testInterfaceImpl{
-	//	logger: pluginLogger,
-	//}
-	//
-	//testPluginMap := map[string]Plugin{
-	//	"test": &testInterfacePlugin{Impl: testPlugin},
-	//}
+	pluginLogger := log.New(os.Stderr, "test-proc", log.LstdFlags)
+
+	testPlugin := &testInterfaceImpl{
+		logger: pluginLogger,
+	}
+
+	testPluginMap := map[string]Plugin{
+		"test": &testInterfacePlugin{Impl: testPlugin},
+	}
 
 	cmd, args := args[0], args[1:]
 	switch cmd {
 	case "stderr":
-		fmt.Printf("%d|%d|tcp|:1234\n", CoreProtocolVersion, 1)
+		fmt.Printf("tcp|:1234\n")
 		os.Stderr.WriteString("HELLO\n")
 		os.Stderr.WriteString("WORLD\n")
 	case "start-timeout":
 		time.Sleep(1 * time.Minute)
 		os.Exit(1)
 	case "mock":
-		fmt.Printf("%d|%d|tcp|:1234\n", CoreProtocolVersion, 1)
+		fmt.Printf("tcp|:1234\n")
 		<-make(chan int)
 	case "cleanup":
 		// Create a defer to write the file. This tests that we get cleaned
@@ -209,7 +209,7 @@ func TestHelperProcess(t *testing.T) {
 		// Shouldn't reach here but make sure we exit anyways
 		os.Exit(0)
 	case "stdin":
-		fmt.Printf("%d|%d|tcp|:1234\n", CoreProtocolVersion, 1)
+		fmt.Printf("tcp|:1234\n")
 		data := make([]byte, 5)
 		if _, err := os.Stdin.Read(data); err != nil {
 			log.Printf("stdin read error: %s", err)

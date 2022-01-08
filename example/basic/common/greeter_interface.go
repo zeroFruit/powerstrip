@@ -1,8 +1,9 @@
 package common
 
 import (
-	"github.com/zeroFruit/powerstrip"
 	"net/rpc"
+
+	"github.com/zeroFruit/powerstrip"
 )
 
 type Greeter interface {
